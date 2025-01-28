@@ -3,7 +3,7 @@ import FormBuilder from "./components/FormBuilder";
 
 function App() {
   return (
-    <Container maxWidth="lg" style={{ width: "80%", marginTop: "4rem" }}>
+    <Container maxWidth="lg" style={{ width: "90%", marginTop: "4rem" }}>
       <FormBuilder />
     </Container>
   );
