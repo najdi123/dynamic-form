@@ -1,12 +1,16 @@
 import { TextField, Checkbox, FormControlLabel } from "@mui/material";
+import { useFormStore } from "../store/useFormStore";
 import { Element } from "../types/form";
-type Props = { elementList: Element[] };
-const CreatedForm = ({ elementList }: Props) => {
+
+const CreatedForm = () => {
+  const elements = useFormStore((state) => state.elements);
+
   return (
     <>
-      {elementList.map((element) => {
+      {elements.map((element: Element) => {
         return (
           <div key={element.id}>
+            {/* Text Field */}
             {element.type === "text" && (
               <TextField
                 style={{ margin: "15px 0 0" }}
@@ -14,6 +18,8 @@ const CreatedForm = ({ elementList }: Props) => {
                 required={element.isRequired}
               />
             )}
+
+            {/* Checkbox */}
             {element.type === "checkbox" && (
               <div>
                 {/* Show the main checkbox label */}

@@ -1,16 +1,15 @@
-// CreateElement.tsx
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 import { Button, TextField, Checkbox, FormControlLabel } from "@mui/material";
 import { Element } from "../types/form";
+import { useFormStore } from "../store/useFormStore"; // <-- import store
+import * as yup from "yup";
 
 type CreateTextFieldFormData = {
   label: string;
   isRequired?: boolean;
 };
 
-// Schema for text fields
 const textFieldSchema = yup.object({
   label: yup.string().required("Label is required"),
   isRequired: yup.boolean().optional(),
@@ -20,13 +19,12 @@ type Props = {
   setIsCreating: React.Dispatch<
     React.SetStateAction<"text" | "checkbox" | null>
   >;
-  handleAddElement: (element: Element) => void;
 };
 
-export default function CreateElement({
-  setIsCreating,
-  handleAddElement,
-}: Props) {
+export default function CreateTextField({ setIsCreating }: Props) {
+  // Access addElement from the store
+  const addElement = useFormStore((state) => state.addElement);
+
   const {
     control,
     handleSubmit,
@@ -38,21 +36,25 @@ export default function CreateElement({
       isRequired: false,
     },
   });
-  const onError = (errors: unknown) => {
-    console.log("Validation failed. Errors:", errors);
-  };
+
   const onSubmit = (data: CreateTextFieldFormData) => {
     const newElement: Element = {
       id: `${Date.now()}`,
-      type: "text", // fixed "text"
+      type: "text",
       label: data.label,
       isRequired: data.isRequired,
     };
-    handleAddElement(newElement);
+
+    // Instead of calling handleAddElement, call the store’s addElement
+    addElement(newElement);
+
+    // Then close out the creation modal or whatever logic you want
+    setIsCreating(null);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit, onError)}>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      {/* Label */}
       <div>
         <Controller
           name="label"
@@ -67,6 +69,8 @@ export default function CreateElement({
           )}
         />
       </div>
+
+      {/* Required Checkbox */}
       <div>
         <Controller
           name="isRequired"
@@ -79,6 +83,7 @@ export default function CreateElement({
           )}
         />
       </div>
+
       <Button variant="contained" type="submit" style={{ marginRight: "8px" }}>
         Submit
       </Button>

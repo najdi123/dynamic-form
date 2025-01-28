@@ -1,15 +1,14 @@
-import React from "react";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 import { Button, TextField, Checkbox, FormControlLabel } from "@mui/material";
 import { Element } from "../types/form";
+import { useFormStore } from "../store/useFormStore";
+import * as yup from "yup";
 
 type Props = {
   setIsCreating: React.Dispatch<
     React.SetStateAction<"text" | "checkbox" | null>
   >;
-  handleAddElement: (element: Element) => void;
 };
 
 type CreateCheckboxFormData = {
@@ -33,12 +32,9 @@ const checkboxSchema = yup.object({
     .required(),
 });
 
-export default function CreateCheckboxElement({
-  setIsCreating,
-  handleAddElement,
-}: Props) {
-  // 1) We tell react-hook-form our form data matches `Element`
-  //    which already has an optional `choices?: Choice[]`
+export default function CreateCheckboxElement({ setIsCreating }: Props) {
+  const addElement = useFormStore((state) => state.addElement);
+
   const {
     control,
     handleSubmit,
@@ -48,39 +44,23 @@ export default function CreateCheckboxElement({
     defaultValues: {
       label: "",
       isRequired: false,
-      // Start with exactly one default choice (empty)
-      choices: [
-        {
-          // We can create a temp ID here, or leave it blank until onSubmit
-          name: "",
-        },
-      ],
+      choices: [{ name: "" }],
     },
   });
 
-  // 3) Use useFieldArray to manage `choices` (the array in `Element`)
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "choices", // <— the key in `defaultValues`
+    name: "choices",
   });
-  const onError = (errors: unknown) => {
-    console.log("Validation failed. Errors:", errors);
-  };
 
-  // 4) Handle form submission
   const onSubmit = (data: CreateCheckboxFormData) => {
-    // We can generate an ID for the Element now (or use a library like uuid).
     const finalId = `${Date.now()}`;
 
-    // Also, ensure each choice has a valid ID. This is optional—
-    // you can create IDs on append() if you prefer.
-    const finalChoices =
-      data.choices?.map((choice, index) => ({
-        ...choice,
-        id: `${finalId}-choice-${index}`,
-      })) ?? [];
+    const finalChoices = data.choices.map((choice, index) => ({
+      ...choice,
+      id: `${finalId}-choice-${index}`,
+    }));
 
-    // 5) Now create the final `Element` object
     const newElement: Element = {
       id: finalId,
       type: "checkbox",
@@ -89,11 +69,14 @@ export default function CreateCheckboxElement({
       choices: finalChoices,
     };
 
-    handleAddElement(newElement);
+    // Add to Zustand
+    addElement(newElement);
+
+    setIsCreating(null);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit, onError)}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       {/* Label */}
       <div>
         <Controller
@@ -129,11 +112,9 @@ export default function CreateCheckboxElement({
         <h4>Choices</h4>
         {fields.map((field, index) => (
           <div key={field.id} style={{ display: "flex", marginBottom: 8 }}>
-            {/* Tie to the `name` field of each Choice */}
             <Controller
               name={`choices.${index}.name` as const}
               control={control}
-              rules={{ required: "Choice name is required" }}
               render={({ field: rhfField }) => (
                 <TextField
                   {...rhfField}
@@ -145,7 +126,6 @@ export default function CreateCheckboxElement({
               )}
             />
 
-            {/* Remove choice button if more than 1 choice */}
             {fields.length > 1 && (
               <Button
                 type="button"
@@ -157,7 +137,6 @@ export default function CreateCheckboxElement({
             )}
           </div>
         ))}
-
         <Button type="button" onClick={() => append({ name: "" })}>
           + Add Another Choice
         </Button>
