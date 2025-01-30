@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React from "react";
 
 import { Button } from "@mui/material";
 import CreateCheckboxElement from "./CreateCheckboxElement";
@@ -7,9 +7,9 @@ import CreateTextField from "./CreateTextField";
 import { useFormStore } from "../store/useFormStore";
 
 const FormBuilder = () => {
-  const [isCreating, setIsCreating] = useState<"text" | "checkbox" | null>(
-    null
-  );
+  const [isCreating, setIsCreating] = React.useState<
+    "text" | "checkbox" | null
+  >(null);
   const resetElements = useFormStore((state) => state.resetElements);
   const handleCreateElement = () => {
     setIsCreating("text");

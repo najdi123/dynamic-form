@@ -1,3 +1,4 @@
+import React from "react";
 import { TextField, Checkbox, FormControlLabel } from "@mui/material";
 import { useFormStore } from "../store/useFormStore";
 import { Element } from "../types/form";
@@ -6,7 +7,7 @@ const CreatedForm = () => {
   const elements = useFormStore((state) => state.elements);
 
   return (
-    <>
+    <React.Fragment>
       {elements.map((element: Element) => {
         return (
           <div key={element.id}>
@@ -40,7 +41,7 @@ const CreatedForm = () => {
           </div>
         );
       })}
-    </>
+    </React.Fragment>
   );
 };
 
